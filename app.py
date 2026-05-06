@@ -1,41 +1,28 @@
-import streamlit as st
-import pandas as pd
-import pickle
+# 1. Create the binary (0/1) features based on user selection
+# Fuel Type Logic
+fuel_diesel = 1 if fuel_type == "Diesel" else 0
+fuel_petrol = 1 if fuel_type == "Petrol" else 0
 
-# Load the trained model
-model = pickle.load(open('car_price_model.pkl', 'rb'))
+# Seller Type Logic
+seller_individual = 1 if seller_type == "Individual" else 0
 
-st.title("Car Price Prediction App")
-st.write("Enter the car details to predict the selling price.")
+# Transmission Logic
+transmission_manual = 1 if transmission == "Manual" else 0
 
-# 1. Create input fields for the user
-present_price = st.number_input("Present Market Price (in lakhs)", min_value=0.0)
-kms_driven = st.number_input("Kilometers Driven", min_value=0)
-owner = st.selectbox("Number of Previous Owners", [0, 1, 3])
-age = st.number_input("Age of the Car", min_value=0, max_value=50)
+# 2. Arrange features in the EXACT order of X.columns from your notebook
+# Based on your notebook, the order is likely:
+# [Present_Price, Kms_Driven, Owner, Age, Fuel_Type_Diesel, Fuel_Type_Petrol, Seller_Type_Individual, Transmission_Manual]
 
-# Match the categorical encoding from your notebook
-fuel_type = st.selectbox("Fuel Type", ["Petrol", "Diesel", "CNG"])
-fuel_map = {"Petrol": 0, "Diesel": 1, "CNG": 2}
-
-seller_type = st.selectbox("Seller Type", ["Dealer", "Individual"])
-seller_map = {"Dealer": 0, "Individual": 1}
-
-transmission = st.selectbox("Transmission", ["Manual", "Automatic"])
-trans_map = {"Manual": 0, "Automatic": 1}
-
-# 2. Predict button
 if st.button("Predict Selling Price"):
-    # Arrange inputs in the exact order the model was trained on
-    # Check your X.columns in the notebook to confirm this order!
     features = [[
         present_price, 
         kms_driven, 
         owner, 
         age, 
-        fuel_map[fuel_type], 
-        seller_map[seller_type], 
-        trans_map[transmission]
+        fuel_diesel, 
+        fuel_petrol, 
+        seller_individual, 
+        transmission_manual
     ]]
     
     prediction = model.predict(features)
