@@ -1,4 +1,21 @@
-import streamlit as st
+# 1. Encoding (Matching your notebook exactly)
+# Fuel_Type: Petrol:0, Diesel:1, CNG:2
+fuel_val = 0 if fuel == "Petrol" else (1 if fuel == "Diesel" else 2)
+
+# Seller_Type: Dealer:0, Individual:1
+seller_val = 1 if seller == "Individual" else 0
+
+# Transmission: Manual:0, Automatic:1
+trans_val = 1 if transmission == "Automatic" else 0
+
+# 2. Prediction Button
+if st.button("Calculate Market Value"):
+    # MUST be 7 features in this exact order:
+    features = np.array([[present_price, kms_driven, fuel_val, seller_val, trans_val, owner, age]])
+    
+    prediction = model.predict(features)
+    
+    st.success(f"Estimated Price: ₹ {round(prediction[0], 2)} Lakh")import streamlit as st
 import pickle
 import numpy as np
 
