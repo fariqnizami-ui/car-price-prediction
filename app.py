@@ -3,74 +3,98 @@ import pickle
 import numpy as np
 
 # ===== PAGE CONFIG =====
-st.set_page_config(page_title="Car Price Predictor", page_icon="🚗", layout="wide")
+st.set_page_config(page_title="CarValue Pro", page_icon="🏎️", layout="centered")
 
-# ===== CUSTOM CSS =====
+# ===== PREMIUM CUSTOM CSS =====
 st.markdown("""
 <style>
-.main { background-color: #f0f2f6; }
-h1 { color: #1f4037; text-align: center; font-family: 'Arial'; }
-.stButton>button {
-    background-color: #1f4037;
-    color: white;
-    border-radius: 10px;
-    height: 3em;
-    width: 100%;
-    font-weight: bold;
-}
+    /* Main background */
+    .stApp {
+        background-color: #f4f7f6;
+    }
+    /* Prediction card styling */
+    .prediction-card {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    /* Heading styling */
+    h1 {
+        color: #1e293b;
+        font-family: 'Helvetica Neue', sans-serif;
+        font-weight: 800;
+    }
+    /* Button styling */
+    .stButton>button {
+        background: linear-gradient(135deg, #2563eb, #1e40af);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 12px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ===== LOAD MODEL =====
-# Make sure 'car_price_model.pkl' is uploaded to your GitHub repo
-model = pickle.load(open('car_price_model.pkl', 'rb'))
+# Using st.cache_resource so the model doesn't reload every time you click a button
+@st.cache_resource
+def load_model():
+    return pickle.load(open('car_price_model.pkl', 'rb'))
 
-# ===== TITLE =====
-st.markdown("<h1>🚗 Car Price Prediction</h1>", unsafe_allow_html=True)
-st.write("### Enter car details below 👇")
+model = load_model()
 
-# ===== INPUT LAYOUT =====
-col1, col2 = st.columns(2)
+# ===== HEADER =====
+st.markdown("<h1>🏎️ CarValue Pro</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #64748b;'>Instant AI-powered car valuation based on market trends</p>", unsafe_allow_html=True)
+st.markdown("---")
 
-with col1:
-    present_price = st.number_input("💰 Present Price (Lakhs)", 0.5, 100.0, 5.0)
-    kms_driven = st.number_input("📍 Kms Driven", 0, 500000, 15000)
-    owner = st.selectbox("👤 Previous Owners", [0, 1, 3])
+# ===== INPUT SECTION =====
+with st.container():
+    col1, col2 = st.columns(2, gap="large")
+    
+    with col1:
+        st.subheader("Vehicle Info")
+        present_price = st.slider("Original Showroom Price (Lakhs)", 0.5, 50.0, 7.5, step=0.1)
+        age = st.number_input("Vehicle Age (Years)", 0, 25, 4)
+        kms_driven = st.number_input("Distance Traveled (Kms)", 0, 300000, 20000, step=500)
+        owner = st.segmented_control("Previous Owners", [0, 1, 3], default=0)
 
-with col2:
-    fuel = st.selectbox("⛽ Fuel Type", ["Petrol", "Diesel", "CNG"])
-    seller = st.selectbox("🏢 Seller Type", ["Dealer", "Individual"])
-    transmission = st.selectbox("⚙ Transmission", ["Manual", "Automatic"])
-    age = st.number_input("📅 Car Age (Years)", 0, 30, 5)
+    with col2:
+        st.subheader("Technical Specs")
+        fuel = st.selectbox("Fuel Category", ["Petrol", "Diesel", "CNG"])
+        seller = st.radio("Sales Channel", ["Dealer", "Individual"], horizontal=True)
+        transmission = st.radio("Gearbox Type", ["Manual", "Automatic"], horizontal=True)
 
-# ===== ENCODING (Matches Notebook Cell 32) =====
-# Fuel_Type: Petrol=0, Diesel=1, CNG=2
+# ===== ENCODING LOGIC (Matches Notebook Cell 32) =====
 fuel_val = 0 if fuel == "Petrol" else (1 if fuel == "Diesel" else 2)
-# Seller_Type: Dealer=0, Individual=1
 seller_val = 1 if seller == "Individual" else 0
-# Transmission: Manual=0, Automatic=1
 trans_val = 0 if transmission == "Manual" else 1
 
-# ===== PREDICTION =====
-st.markdown("---")
-col_btn, col_result = st.columns([1,1])
-
-with col_btn:
-    predict_btn = st.button("🚀 Predict")
-
-with col_result:
-    if predict_btn:
-        # ORDER MUST BE: [Present_Price, Kms_Driven, Fuel_Type, Seller_Type, Transmission, Owner, Age]
-        features = np.array([[present_price, kms_driven, fuel_val, seller_val, trans_val, owner, age]])
-
-        prediction = model.predict(features)
-
-        if prediction[0] < 0:
-            st.error("Invalid Prediction (Price cannot be negative)")
-        else:
-            st.markdown(f"""
-                <div style="color: #555;">Estimated Price</div>
-                <div style="font-size: 32px; font-weight: 700; color: #1f4037;">
-                    ₹ {round(prediction[0], 2)} Lakh
-                </div>
-            """, unsafe_allow_html=True)
+# ===== PREDICTION SECTION =====
+st.write("##") # Add spacing
+if st.button("Calculate Market Value"):
+    # Features order from your training: [Present_Price, Kms_Driven, Fuel_Type, Seller_Type, Transmission, Owner, Age]
+    features = np.array([[present_price, kms_driven, fuel_val, seller_val, trans_val, owner, age]])
+    prediction = model.predict(features)[0]
+    
+    st.markdown("---")
+    
+    # Custom Prediction Result Display
+    if prediction < 0:
+        st.warning("⚠️ The provided data doesn't match a realistic market profile.")
+    else:
+        st.markdown(f"""
+            <div class="prediction-card">
+                <h3 style='color: #64748b; margin-bottom: 0;'>Estimated Resale Value</h3>
+                <h1 style='color: #2563eb; font-size: 48px; margin-top: 10px;'>₹ {round(prediction, 2)} Lakh</h1>
+                <p style='color: #94a3b8; font-size: 14px;'>Price based on current market demand and vehicle condition.</p>
+            </div>
+        """, unsafe_allow_html=True)
