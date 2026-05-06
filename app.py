@@ -28,3 +28,5 @@ if st.button("Predict"):
     features = [[present_price, kms_driven, owner, age, fuel_diesel, fuel_petrol, seller_individual, transmission_manual]]
     prediction = model.predict(features)
     st.success(f"Predict Price: {prediction[0]:.2f} Lakhs")
+cols_to_drop = [c for c in ['Car_Name', 'Year', 'Current_Year'] if c in df.columns]
+df.drop(columns=cols_to_drop, inplace=True)
