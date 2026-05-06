@@ -41,14 +41,15 @@ with col2:
     transmission = st.selectbox("⚙️ Transmission", ["Manual", "Automatic"])
     age = st.number_input("📅 Age (Years)", 0, 30, 5)
 
-# ===== ENCODING (Matches Notebook Cell 32) =====
+# 1. Encoding (Ensure these match your notebook's label encoding)
 fuel_map = {'Petrol': 0, 'Diesel': 1, 'CNG': 2}
 seller_map = {'Dealer': 0, 'Individual': 1}
 trans_map = {'Manual': 0, 'Automatic': 1}
 
-# ===== PREDICTION =====
+# 2. Prediction Button
 if st.button("GET VALUATION"):
-    # Features order: [Present_Price, Kms_Driven, Fuel_Type, Seller_Type, Transmission, Owner, Age]
+    # The list below MUST have exactly 7 items in this specific order:
+    # [Present_Price, Kms_Driven, Fuel_Type, Seller_Type, Transmission, Owner, Age]
     features = np.array([[
         present_price, 
         kms_driven, 
@@ -68,3 +69,5 @@ if st.button("GET VALUATION"):
             <h1 style="color: #ffffff;">₹ {round(prediction, 2)} Lakh</h1>
         </div>
     """, unsafe_allow_html=True)
+
+\
